@@ -1216,7 +1216,7 @@ int KHttp2::send_header(KHttp2Context* http2_ctx, bool body_end, bool flush) {
 	int header_len = 0;
 	while (buf) {
 		header_len += buf->used;
-		if (buf->next == NULL && (body_end || flush)) {
+		if (buf->next == NULL && (body_end || flush || http2_ctx->no_delay)) {
 			buf->tcp_nodelay = 1;
 		}
 		buf = buf->next;
@@ -1388,10 +1388,10 @@ bool KHttp2::add_header(KHttp2Context* ctx, const char* name, hlen_t name_len, c
 void KHttp2::init(kconnection* c) {
 	//printf("Http2 init [%p]\n", this);
 	this->c = c;
-#ifdef _WIN32
 	// Keep control frames and multiplexed responses independent of Nagle delays.
+	// On Linux TCP_CORK still batches writes; once a frame uncorks the socket,
+	// Nagle would otherwise hold the next small write for the peer's delayed ACK.
 	ksocket_no_delay(c->st.fd, true);
-#endif
 	KBIT_SET(c->st.base.st_flags, STF_RTIME_OUT);
 	read_processing = 1;
 	send_window = KGL_HTTP_V2_DEFAULT_WINDOW;

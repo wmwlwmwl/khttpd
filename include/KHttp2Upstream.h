@@ -98,6 +98,9 @@ public:
 		return true;
 	}
 	void set_duplex(bool enabled) override { ctx->duplex = enabled; }
+	void set_no_delay(bool forever) override {
+		if (forever) ctx->no_delay = 1;
+	}
 
 	sockaddr_i* GetAddr() override {
 		return &http2->c->addr;

@@ -132,6 +132,9 @@ public:
 		return ctx->tmo;
 	}
 	void flush() override {}
+	void set_no_delay(bool forever) override {
+		if (forever) ctx->no_delay = 1;
+	}
 	void start(int got) override {
 		khttp_server_new_request(this, got);
 	}

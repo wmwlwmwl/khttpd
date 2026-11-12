@@ -327,6 +327,8 @@ public:
 	uint16_t  has_expect : 1;
 	uint16_t  skip_data : 1;
 	uint16_t  sendfile : 1; //write_wait is sendfile.
+	/* interactive stream (tunnel, gRPC): release TCP_CORK after each frame */
+	uint16_t  no_delay : 1;
 	volatile int send_window;
 	size_t recv_window;
 	KHttp2HeaderFrame* send_header;
@@ -423,6 +425,9 @@ public:
 				kassert(content_left == 0);
 				last->tcp_nodelay = 1;
 			}
+		}
+		if (no_delay) {
+			last->tcp_nodelay = 1;
 		}
 		kassert(buf_out);
 		new_buf->next = buf_out;

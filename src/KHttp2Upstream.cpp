@@ -57,7 +57,8 @@ bool KHttp2Upstream::set_header_callback(void* arg, kgl_header_callback header) 
 KGL_RESULT KHttp2Upstream::read_header() {
 	read_header_time = kgl_current_sec;
 	if (ctx->send_header) {
-		http2->send_header(ctx, ctx->content_left == 0 && !ctx->defer_end);
+		/* we wait for the response next, so do not leave the request corked */
+		http2->send_header(ctx, ctx->content_left == 0 && !ctx->defer_end, true);
 	}
 	if (response_heads.empty() && http2->ReadHeader(ctx) != 0) return KGL_EUNKNOW;
 	if (response_heads.empty()) return KGL_EUNKNOW;
