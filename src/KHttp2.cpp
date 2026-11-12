@@ -2206,7 +2206,10 @@ u_char* KHttp2::state_rst_stream(u_char* pos, u_char* end) {
 	stream->out_closed = 1;
 	stream->rst = !completed_response;
 	stream->RemoveQueue();
-	if (stream->read_buffer && !completed_response) {
+	// A tunnel (CONNECT) peer may reset right after its last DATA, as older
+	// kangle did when the origin closed. Relay what arrived before the reset;
+	// read() still reports the reset once the buffer is drained.
+	if (stream->read_buffer && !completed_response && !(client_model && stream->has_upgrade)) {
 		stream->read_buffer->clean();
 	}
 	if (re) {
